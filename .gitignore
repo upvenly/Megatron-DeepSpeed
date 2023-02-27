@@ -145,3 +145,7 @@ staticfiles
 
 # tmp files
 *.swp
+checkpoints/*
+data/*
+log/*
+bert_data/*

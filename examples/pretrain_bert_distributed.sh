@@ -1,5 +1,8 @@
 #!/bin/bash
 
+mkdir -p log
+now=$(date +"%Y%m%d_%H%M%S")
+
 GPUS_PER_NODE=8
 # Change for multinode config
 MASTER_ADDR=localhost
@@ -8,8 +11,11 @@ NNODES=1
 NODE_RANK=0
 WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
 
-DATA_PATH=<Specify path and file prefix>_text_sentence
-CHECKPOINT_PATH=<Specify path>
+# DATA_PATH=<Specify path and file prefix>_text_sentence
+# CHECKPOINT_PATH=<Specify path>
+DATA_PATH=bert_data/my-bert_text_sentence
+CHECKPOINT_PATH=checkpoints/bert_345m
+VOCAB_FILE=bert_data/bert-large-uncased-vocab.txt
 
 DISTRIBUTED_ARGS="--nproc_per_node $GPUS_PER_NODE --nnodes $NNODES --node_rank $NODE_RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
 
@@ -26,7 +32,7 @@ python -m torch.distributed.launch $DISTRIBUTED_ARGS \
        --save $CHECKPOINT_PATH \
        --load $CHECKPOINT_PATH \
        --data-path $DATA_PATH \
-       --vocab-file bert-vocab.txt \
+       --vocab-file $VOCAB_FILE \
        --data-impl mmap \
        --split 949,50,1 \
        --distributed-backend nccl \
@@ -41,4 +47,4 @@ python -m torch.distributed.launch $DISTRIBUTED_ARGS \
        --save-interval 10000 \
        --eval-interval 1000 \
        --eval-iters 10 \
-       --fp16
+       --fp16 2>&1 | tee log/bert-native.log.$now

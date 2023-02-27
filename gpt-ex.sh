@@ -1,0 +1,2 @@
+sh examples/pretrain_gpt_distributed.sh
+sh examples/pretrain_gpt_distributed_with_mp.sh

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+mkdir -p log
 GPUS_PER_NODE=8
 # Change for multinode config
 MASTER_ADDR=localhost
@@ -43,4 +43,4 @@ python -m torch.distributed.launch $DISTRIBUTED_ARGS \
        --save-interval 10000 \
        --eval-interval 1000 \
        --eval-iters 10 \
-       --fp16
+       --fp16 2>&1 | tee log/build.log
