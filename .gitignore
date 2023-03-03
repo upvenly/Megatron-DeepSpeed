@@ -149,3 +149,6 @@ checkpoints/*
 data/*
 log/*
 bert_data/*
+train.template.py
+nohup.out
+output_dir/*

@@ -5,12 +5,16 @@
 # Multi-node will require either a `hostfile` or switching to `torch.distributed.launch`
 
 # adjust to the number of GPUs to use
+mkdir -p log
+now=$(date +"%Y%m%d_%H%M%S")
+
 N_GPUS=1
 
-CHECKPOINT_PATH=checkpoints/gpt2
+CHECKPOINT_PATH=checkpoints/gpt2-single-node
 VOCAB_FILE=data/gpt2-vocab.json
 MERGE_FILE=data/gpt2-merges.txt
-DATA_PATH=data/meg-gpt2_text_document
+DATA_PATH=data/meg-gpt2-oscar-en-10k_text_document
+
 
 GPT_ARGS=" \
     --num-layers 24 \
@@ -18,8 +22,8 @@ GPT_ARGS=" \
     --num-attention-heads 16 \
     --seq-length 1024 \
     --max-position-embeddings 1024 \
-    --micro-batch-size 4 \
-    --global-batch-size 8 \
+    --micro-batch-size 8 \
+    --global-batch-size 64 \
     --lr-decay-iters 320000 \
     --lr 0.00015 \
     --min-lr 1.0e-5 \
@@ -58,4 +62,4 @@ CMD="$LAUNCHER pretrain_gpt.py $ALL_ARGS"
 
 echo $CMD
 
-$CMD
+$CMD 2>&1 | tee log/gpt2-single-node.log.$now
