@@ -143,5 +143,10 @@ media
 staticfiles
 /tags
 
-# tmp files
-*.swp
+# run-gpt3.sh files
+data/*
+output_dir/*
+logs
+hostfile_dir/*
+dtk-whl
+*.json
