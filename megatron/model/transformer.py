@@ -28,6 +28,7 @@ from megatron.model.fused_softmax import FusedScaleMaskSoftmax
 from megatron.model.fused_bias_gelu import bias_gelu_impl
 from megatron.model.utils import attention_mask_func, openai_gelu, erf_gelu
 
+from lightop import op
 import deepspeed
 
 from .glu_activations import GLU_ACTIVATIONS
@@ -405,11 +406,16 @@ class ParallelAttention(MegatronModule):
         return output, bias
 
 
+# def bias_dropout_add(x, bias, residual, prob, training):
+#     # type: (Tensor, Tensor, Tensor, float, bool) -> Tensor
+#     out = torch.nn.functional.dropout(x + bias, p=prob, training=training)
+#     out = residual + out
+#     return out
 def bias_dropout_add(x, bias, residual, prob, training):
     # type: (Tensor, Tensor, Tensor, float, bool) -> Tensor
-    out = torch.nn.functional.dropout(x + bias, p=prob, training=training)
-    out = residual + out
+    out = op.add_dropout_forward_autograd(x + bias, residual,prob,training)
     return out
+
 
 
 def get_bias_dropout_add(training):
@@ -418,13 +424,13 @@ def get_bias_dropout_add(training):
     return _bias_dropout_add
 
 
-@torch.jit.script
+# @torch.jit.script
 def bias_dropout_add_fused_train(x, bias, residual, prob):
     # type: (Tensor, Tensor, Tensor, float) -> Tensor
     return bias_dropout_add(x, bias, residual, prob, True)
 
 
-@torch.jit.script
+# @torch.jit.script
 def bias_dropout_add_fused_inference(x, bias, residual, prob):
     # type: (Tensor, Tensor, Tensor, float) -> Tensor
     return bias_dropout_add(x, bias, residual, prob, False)

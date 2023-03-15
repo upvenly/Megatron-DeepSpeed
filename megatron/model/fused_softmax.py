@@ -18,6 +18,8 @@ import torch
 import torch.nn as nn
 from megatron.enums import AttnMaskType
 
+from lightop.fusesoftmax  import FuseSoftmax
+
 class ScaledUpperTriangMaskedSoftmax(torch.autograd.Function):
     """
     Fused operation which performs following three operations in sequence
@@ -220,8 +222,9 @@ class FusedScaleMaskSoftmax(nn.Module):
             mask = self.get_causal_mask(input.shape[2])
 
         mask_output = self.mask_func(input, mask) if mask is not None else input
-
-        probs = torch.nn.Softmax(dim=-1)(mask_output)
+        #改
+        # probs = torch.nn.Softmax(dim=-1)(mask_output)
+        probs = FuseSoftmax(dim=-1)(mask_output)
 
         if self.input_in_float16 and self.softmax_in_fp32:
             if self.input_in_fp16:

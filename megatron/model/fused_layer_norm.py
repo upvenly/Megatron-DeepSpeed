@@ -29,7 +29,7 @@ from torch.nn.parameter import Parameter
 import importlib
 import torch
 import torch.nn.functional as F
-
+from lightop import op
 global fused_mix_prec_layer_norm_cuda
 fused_mix_prec_layer_norm_cuda = None
 
@@ -81,6 +81,8 @@ class MixedFusedLayerNorm(torch.nn.Module):
     self.eps = eps
     self.weight = Parameter(torch.Tensor(*normalized_shape))
     self.bias = Parameter(torch.Tensor(*normalized_shape))
+
+
     self.reset_parameters()
 
     args = get_args()
@@ -108,4 +110,7 @@ class MixedFusedLayerNorm(torch.nn.Module):
         return FusedLayerNormAffineFunction.apply(
             input, self.weight, self.bias, self.normalized_shape, self.eps)
     else:
-        return F.layer_norm(input, self.normalized_shape, self.weight, self.bias)
+        # print("*"*60)
+        # print(input.dtype,self.weight.dtype,self.bias.dtype)
+        # print("*"*60)
+        return op.layernorm_forward_autograd(input, self.weight,self.bias,self.eps)
